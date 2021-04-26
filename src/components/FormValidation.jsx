@@ -2,17 +2,18 @@ import React, { useState } from "react";
 import { alphaWithSpaceRegex, onlyNumberRegex } from "../utils/regex";
 
 export default function FormValidation() {
-//   const [data, setData] = useState({});
+  //   const [data, setData] = useState({});
   const [cardholderData, setCardholderData] = useState({});
   const [validationError, setValidationError] = useState({});
 
-  console.log('cardholderData, OBJECT',cardholderData);
-  console.log('validationError OBJECT',validationError)
+  console.log("cardholderData, OBJECT", cardholderData);
+  console.log("validationError OBJECT", validationError);
 
-  const errorSetter = (event, msg) => {
+  const onChangeErrorSetter = (name, msg) => {
     let error = validationError;
-    delete error[event.target.name];
-    setValidationError({ ...error, [event.target.name]: msg });
+    delete error[name];
+    console.log({ ...error, [name]: msg });
+    setValidationError({ ...error, [name]: msg });
     return;
   };
 
@@ -22,50 +23,59 @@ export default function FormValidation() {
     delete error[event.target.name];
 
     if (name === "cardHolderName") {
-      if (value == null || value == "") {
-        errorSetter(event, "This Field cannot be Empty");
-        // return;
+      if (value == null || value === "") {
+        onChangeErrorSetter(name, "This Field cannot be Empty");
       } else if (!alphaWithSpaceRegex.test(value)) {
-        errorSetter(event, "Only alphabets required");
-        return;
+        onChangeErrorSetter(name, "Only alphabets required");
       }
     }
-
-    // This will not allow to store number in cardHolderName state
-    // if (name === "cardHolderName") {
-    //   if (!alphaWithSpaceRegex.test(value)) {
-    //     return;
-    //   }
-    // }
 
     if (name === "cvc") {
-      if (value == null || value == "") {
-        errorSetter(event, "This Field cannot be Empty");
-        // return;
+      if (value == null || value === "") {
+        onChangeErrorSetter(name, "This Field cannot be Empty");
       } else if (!onlyNumberRegex.test(value)) {
-        errorSetter(event, "Only digits required");
-        return;
+        onChangeErrorSetter(name, "Only digits required");
       }
-      //   setCardHolderError("");
     }
 
-    // setValidationError({ ...error });
     setCardholderData({
       ...cardholderData,
       [event.target.name]: event.target.value,
     });
-    // setCardholderName(value);
-    // console.log(value);
   };
 
-  const handleSubmit = () => {
+  // const [cardHolderNameError, setCardHolderNameError] = useState(false);
+  // const [cvcError, setCvcError] = useState(false);
 
-  }
+  const handleClick = (e) => {
+    e.preventDefault();
+    const { cardHolderName, cvc } = cardholderData;
+    const err1 = {};
+    const err2 = {};
+
+    if (!cardHolderName || !cvc) {
+      if (!cardHolderName) {
+        err1["cardHolderName"] = "this is card holder field";
+      }
+
+      if (!cvc) {
+        err2["cvc"] = "this is cvc field";
+      }
+      const finalObj = Object.assign(err1, err2);
+      setValidationError(finalObj);
+      console.log(err1);
+      console.log(err2);
+      return;
+    }
+
+    // Api end point call here
+    console.log("API CALLED");
+  };
 
   return (
     <div>
       <h1>Form Validation</h1>
-      <form onSubmit={handleSubmit}>
+      <form>
         <div>
           <label>Card Holder Name</label>
           <input
@@ -74,7 +84,10 @@ export default function FormValidation() {
             // onBlur={validateInputField}
             // onFocus={handleFocus}
           />
-          {validationError.cardHolderName && <p>{validationError.cardHolderName}</p>}
+          {validationError.cardHolderName && (
+            <p>{validationError.cardHolderName}</p>
+          )}
+          {/* {cardHolderNameError && <p>This field cannot be empty</p>} */}
         </div>
         <div>
           <label>Cvc</label>
@@ -87,8 +100,11 @@ export default function FormValidation() {
             minLength="3"
           />
           {validationError.cvc && <p>{validationError.cvc}</p>}
+          {/* {cvcError && <p>This field cannot be empty</p>} */}
         </div>
-        <button type="submit">Submit</button>
+        <button type="submit" onClick={handleClick}>
+          Submit
+        </button>
       </form>
     </div>
   );
